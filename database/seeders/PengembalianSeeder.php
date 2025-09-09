@@ -14,5 +14,7 @@ class PengembalianSeeder extends Seeder
             'peminjaman_id' => 1, // Peminjaman Laravel
             'tgl_kembali' => now(),
         ]);
+        
+        Pengembalian::factory()->count(20)->create();
     }
 }

@@ -10,7 +10,7 @@ class Buku extends Model
     use HasFactory;
 
     protected $fillable = [
-        'kode_buku', 'judul', 'kategori_id', 'penulis', 'penerbit', 'tahun_terbit', 'stok'
+        'kode_buku', 'judul', 'kategori_id', 'penulis', 'penerbit', 'tahun_terbit', 'stok', 'gambar'
     ];
 
     // Relasi: Book → Peminjamans (satu buku bisa dipinjam berkali-kali)

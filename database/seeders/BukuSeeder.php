@@ -15,7 +15,7 @@ class BukuSeeder extends Seeder
             'kategori_id' => 1,
             'penulis' => 'Robben Wijaya',
             'penerbit' => 'Tekno Press',
-            'tahun_terbit' => 2024,
+            'tahun_terbit' => '2022-05-15',
             'stok' => 5
         ]);
 
@@ -25,8 +25,10 @@ class BukuSeeder extends Seeder
             'kategori_id' => 2,
             'penulis' => 'Budi Santoso',
             'penerbit' => 'Mobile Press',
-            'tahun_terbit' => 2023,
+            'tahun_terbit' => '2023-03-10',
             'stok' => 3
         ]);
+
+        Buku::factory()->count(30)->create();
     }
 }

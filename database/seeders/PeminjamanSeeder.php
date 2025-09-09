@@ -24,5 +24,6 @@ class PeminjamanSeeder extends Seeder
             'tgl_jatuh_tempo' => now()->addDays(4),
             'status' => 'dipinjam'
         ]);
+        Peminjaman::factory()->count(30)->create();
     }
 }

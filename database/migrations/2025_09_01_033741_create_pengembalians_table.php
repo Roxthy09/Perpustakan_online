@@ -16,6 +16,9 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->foreignId('peminjaman_id')->constrained('peminjamen')->onDelete('cascade');
             $table->date('tgl_kembali');
+            $table->enum('kondisi', ['baik', 'telat', 'rusak','hilang'])->default('baik');
+            $table->integer('hari_telat')->nullable();
+            $table->enum('status', ['menunggu', 'selesai'])->default('menunggu');
             $table->timestamps();
         });
     }

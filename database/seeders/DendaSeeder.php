@@ -14,5 +14,7 @@ class DendaSeeder extends Seeder
             'jumlah' => 15000,
             'status' => 'belum_bayar'
         ]);
+
+        Denda::factory()->count(20)->create();
     }
 }

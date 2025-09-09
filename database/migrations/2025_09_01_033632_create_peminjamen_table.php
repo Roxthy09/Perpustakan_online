@@ -17,7 +17,9 @@ return new class extends Migration
             $table->foreignId('buku_id')->constrained('bukus')->onDelete('cascade');
             $table->date('tgl_pinjam');
             $table->date('tgl_jatuh_tempo');
-            $table->enum('status', ['dipinjam', 'dikembalikan'])->default('dipinjam');
+            $table->enum('status', ['dipinjam', 'dikembalikan','disetujui', 'pending', 'ditolak'])->default('pending');
+            $table->text('catatan')->nullable();
+            $table->boolean('persetujuan')->default(false);
             $table->timestamps();
         });
     }

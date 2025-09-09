@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('pengembalian_id')->constrained('pengembalians')->onDelete('cascade');
             $table->decimal('jumlah', 10, 2)->default(0);
+            $table->string('keterangan')->nullable();
             $table->enum('status', ['belum_bayar', 'sudah_bayar'])->default('belum_bayar');
             $table->timestamps();
         });

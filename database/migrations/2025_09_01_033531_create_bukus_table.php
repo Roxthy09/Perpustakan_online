@@ -18,7 +18,7 @@ return new class extends Migration
             $table->foreignId('kategori_id')->constrained('kategori_bukus')->onDelete('cascade');
             $table->string('penulis');
             $table->string('penerbit');
-            $table->year('tahun_terbit');
+            $table->date('tahun_terbit');
             $table->integer('stok')->default(0);
             $table->string('gambar')->nullable(); // field gambar (opsional)
             $table->timestamps();

@@ -12,13 +12,18 @@ class Pengembalian extends Model
     protected $table = 'pengembalians';
 
     protected $fillable = [
-        'user_id','pengembalian_id', 'tgl_kembali'
+        'peminjaman_id','user_id','pengembalian_id', 'buku_id', 'tgl_kembali','kondisi', 'hari_telat', 'status'
     ];
 
     // Relasi: Return → Loan
     public function peminjaman()
     {
         return $this->belongsTo(Peminjaman::class);
+    }
+
+    public function buku()
+    {
+        return $this->belongsTo(Buku::class, 'buku_id');
     }
 
      public function user()
@@ -29,6 +34,6 @@ class Pengembalian extends Model
     // Relasi: Return → Denda
     public function denda()
     {
-        return $this->hasOne(Denda::class, 'return_id');
+        return $this->hasOne(Denda::class, 'pengembalian_id');
     }
 }
