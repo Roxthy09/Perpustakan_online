@@ -2,9 +2,7 @@
 
 @section('content')
 <div class="container">
-    <h2>Data Rak</h2>
-
-    <a href="{{ route('rak.create') }}" class="btn btn-success mb-3">Tambah Rak</a>
+    <h1 class="mb-4">Data Rak</h1>
 
     @if(session('success'))
     <div class="alert alert-success">{{ session('success') }}</div>
@@ -12,64 +10,68 @@
 
     <div class="card">
         <div class="card-body">
-            <div class="mb-2">
-                <h4 class="card-title mb-0">File export</h4>
-            </div>
-            <p class="card-subtitle mb-3">
-                Exporting data from a table can often be a key part of a
-                complex application. The Buttons extension for DataTables
-                provides three plug-ins that provide overlapping
-                functionality for data export. You can refer full
-                documentation from here
-                <a href="https://datatables.net/">Datatables</a>
-            </p>
+
+            {{-- Tombol tambah rak hanya untuk admin/petugas --}}
+            @if(auth()->user()->role == 'admin' || auth()->user()->role == 'petugas')
+                <a href="{{ route('rak.create') }}" class="btn btn-primary mb-3">
+                    <i class="ti ti-plus"></i> Tambah Rak
+                </a>
+            @endif
+
             <div class="table-responsive">
-                <table id="file_export" class="table w-100 table-striped table-bordered display text-nowrap">
-                    <thead>
+                <table class="table table-striped table-bordered align-middle">
+                    <thead class="table-light text-center">
                         <tr>
-                            <th>Kode</th>
-                            <th>Nama</th>
+                            <th style="width: 80px;">Kode</th>
+                            <th>Nama Rak</th>
                             <th>Lokasi</th>
-                            <th>Aksi</th>
+                            <th style="width: 160px;">Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
                         @foreach($raks as $rak)
                         <tr>
-                            <td>{{ $rak->kode_rak }}</td>
+                            <td class="text-center">{{ $rak->kode_rak }}</td>
                             <td>{{ $rak->nama_rak }}</td>
                             <td>{{ $rak->lokasi }}</td>
-                            <td>
-                                <a href="{{ route('rak.edit', $rak->id) }}" class="btn btn-warning btn-sm">Edit</a>
-                                <form action="{{ route('rak.destroy', $rak->id) }}" method="POST" style="display:inline-block;">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" onclick="return confirm('Yakin ingin menghapus?')" class="btn btn-danger btn-sm">Hapus</button>
-                                </form>
+                            <td class="text-center">
+                                {{-- Semua user bisa lihat detail --}}
+                                @if(auth()->user()->role == 'user')
+                                    <a href="{{ route('user.rak.show', $rak->id) }}" class="btn btn-info btn-sm" title="Detail">
+                                        <i class="ti ti-eye"></i>
+                                    </a>
+                                @else
+                                    <a href="{{ route('rak.show', $rak->id) }}" class="btn btn-info btn-sm" title="Detail">
+                                        <i class="ti ti-eye"></i>
+                                    </a>
+                                @endif
+
+                                {{-- Hanya admin / petugas bisa edit & hapus --}}
+                                @if(auth()->user()->role == 'admin' || auth()->user()->role == 'petugas')
+                                    <a href="{{ route('rak.edit',$rak->id) }}" class="btn btn-warning btn-sm" title="Edit">
+                                        <i class="ti ti-edit"></i>
+                                    </a>
+                                    <form action="{{ route('rak.destroy',$rak->id) }}" method="POST" class="d-inline">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="btn btn-danger btn-sm" title="Hapus" onclick="return confirm('Yakin ingin hapus rak ini?')">
+                                            <i class="ti ti-trash"></i>
+                                        </button>
+                                    </form>
+                                @endif
                             </td>
                         </tr>
                         @endforeach
                     </tbody>
-                    <tfoot>
-                        <!-- start row -->
-                        <tr>
-                            <th>Kode</th>
-                            <th>Nama</th>
-                            <th>Lokasi</th>
-                            <th>Aksi</th>
-                        </tr>
-                        <!-- end row -->
-                    </tfoot>
                 </table>
             </div>
-            <div class="d-flex justify-content-between align-items-center mt-3">
-                <!-- Info seperti DataTables -->
-                <div class="dataTables_info" role="status" aria-live="polite">
-                    Showing {{ $raks->firstItem() }} to {{ $raks->lastItem() }} of {{ $raks->total() }} entries
-                </div>
 
-                <!-- Pagination -->
-                <div class="dataTables_paginate paging_simple_numbers">
+            <!-- Info & Pagination -->
+            <div class="d-flex justify-content-between align-items-center mt-3">
+                <div class="small text-muted">
+                    Menampilkan {{ $raks->firstItem() }} - {{ $raks->lastItem() }} dari {{ $raks->total() }} data
+                </div>
+                <div>
                     {{ $raks->onEachSide(1)->links('vendor.pagination.datatable') }}
                 </div>
             </div>

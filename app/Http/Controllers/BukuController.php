@@ -11,7 +11,7 @@ class BukuController extends Controller
 {
     public function index()
     {
-        $bukus = Buku::with('kategoris')->paginate(10); // eager load kategori
+        $bukus = Buku::with('kategoris')->latest()->paginate(10); // eager load kategori
         return view('buku.index', compact('bukus'));
     }
 
@@ -28,7 +28,7 @@ class BukuController extends Controller
             'judul' => 'required|string|max:255',
             'penulis' => 'required|string|max:255',
             'penerbit' => 'required|string|max:255',
-            'tahun_terbit' => 'required|digits:4',
+            'tahun_terbit' => 'required|date',
             'kategori_id' => 'required|exists:kategori_bukus,id',
             'stok' => 'required|integer|min:0',
             'gambar' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
@@ -56,7 +56,7 @@ class BukuController extends Controller
             'judul' => 'required|string|max:255',
             'penulis' => 'required|string|max:255',
             'penerbit' => 'required|string|max:255',
-            'tahun_terbit' => 'required|digits:4',
+            'tahun_terbit' => 'required|date',
             'kategori_id' => 'required|exists:kategori_bukus,id',
             'stok' => 'required|integer|min:0',
             'gambar' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',

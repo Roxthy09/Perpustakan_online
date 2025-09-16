@@ -11,11 +11,45 @@ use Carbon\Carbon;
 
 class PeminjamanController extends Controller
 {
-    public function index()
-    {
-        $peminjamans = Peminjaman::with(['user', 'buku'])->paginate(10);
-        return view('peminjaman.index', compact('peminjamans'));
+   public function index(Request $request)
+{
+    $query = Peminjaman::with(['user', 'buku']);
+
+    // Role user -> hanya data miliknya
+    if (auth()->user()->role === 'user') {
+        $query->where('user_id', auth()->id());
     }
+
+    // 🔎 Search (nama user atau judul buku)
+    if ($request->filled('search')) {
+        $search = $request->search;
+        $query->where(function ($q) use ($search) {
+            $q->whereHas('user', function ($q2) use ($search) {
+                $q2->where('name', 'like', "%$search%");
+            })->orWhereHas('buku', function ($q3) use ($search) {
+                $q3->where('judul', 'like', "%$search%");
+            });
+        });
+    }
+
+    // 🎯 Filter status
+    if ($request->filled('status')) {
+        $query->where('status', $request->status);
+    }
+
+    // 📅 Filter tanggal pinjam
+    if ($request->filled('tgl_pinjam')) {
+        $query->whereDate('tgl_pinjam', $request->tgl_pinjam);
+    }
+
+    $peminjamans = $query->orderBy('created_at', 'desc')->paginate(10);
+
+    // biar pagination tetap bawa query string (search, filter)
+    $peminjamans->appends($request->all());
+
+    return view('peminjaman.index', compact('peminjamans'));
+}
+
 
     public function create()
     {
@@ -29,7 +63,7 @@ class PeminjamanController extends Controller
         $request->validate([
             'user_id'   => 'required|exists:users,id',
             'buku_id'   => 'required|exists:bukus,id',
-            'tgl_pinjam'=> 'required|date',
+            'tgl_pinjam' => 'required|date',
         ]);
 
         $peminjaman = new Peminjaman();
@@ -44,9 +78,12 @@ class PeminjamanController extends Controller
         $peminjaman->persetujuan = false;
         $peminjaman->save();
 
-        return redirect()->route('peminjaman.index')->with('success', 'Peminjaman berhasil ditambahkan.');
+        if (auth()->user()->role === 'user') {
+            return redirect()->route('user.peminjaman.index')->with('success', 'Peminjaman berhasil ditambahkan');
+        } else {
+            return redirect()->route('peminjaman.index')->with('success', 'Peminjaman berhasil ditambahkan.');
+        }
     }
-
     public function edit(Peminjaman $peminjaman)
     {
         $users = User::all();
@@ -59,7 +96,7 @@ class PeminjamanController extends Controller
         $request->validate([
             'user_id'   => 'required|exists:users,id',
             'buku_id'   => 'required|exists:bukus,id',
-            'tgl_pinjam'=> 'required|date',
+            'tgl_pinjam' => 'required|date',
             'status'    => 'nullable|in:pending,Disetujui,Ditolak,dipinjam,dikembalikan',
         ]);
 
@@ -76,7 +113,11 @@ class PeminjamanController extends Controller
 
         $peminjaman->save();
 
-        return redirect()->route('peminjaman.index')->with('success', 'Peminjaman berhasil diperbarui.');
+        if (auth()->user()->role === 'user') {
+            return redirect()->route('user.peminjaman.index')->with('success', 'Peminjama berhasil diubah');
+        } else {
+            return redirect()->route('peminjaman.index')->with('success', 'Peminjaman berhasil diubah.');
+        }
     }
 
     public function destroy(Peminjaman $peminjaman)
@@ -108,6 +149,11 @@ class PeminjamanController extends Controller
         ]);
 
         return redirect()->route('user.peminjaman.index')->with('success', 'Status peminjaman diubah menjadi dipinjam dan stok berkurang.');
+    }
+
+    public function show(Peminjaman $peminjaman)
+    {
+        return view('peminjaman.show', compact('peminjaman'));
     }
 
     // Konfirmasi peminjaman (petugas)

@@ -11,13 +11,46 @@ use Illuminate\Http\Request;
 
 class DendaController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $dendas = Denda::with('pengembalian')->paginate(10);
-        $pengembalians = Pengembalian::all();
-        $buku = Buku::all();
-        return view('denda.index', compact('dendas', 'buku', 'pengembalians'));
+        $query = Denda::with(['pengembalian.peminjaman.user', 'pengembalian.peminjaman.buku']);
+
+        // Jika user biasa, hanya bisa lihat dendanya sendiri
+        if (auth()->user()->role === 'user') {
+            $query->whereHas('pengembalian.peminjaman', function ($q) {
+                $q->where('user_id', auth()->id());
+            });
+        }
+
+        // Filter Search (nama peminjam / judul buku)
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->whereHas('pengembalian.peminjaman.user', function ($q2) use ($search) {
+                    $q2->where('name', 'like', '%' . $search . '%');
+                })
+                    ->orWhereHas('pengembalian.peminjaman.buku', function ($q2) use ($search) {
+                        $q2->where('judul', 'like', '%' . $search . '%');
+                    });
+            });
+        }
+
+        // Filter Status
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        // Filter Tanggal (berdasarkan created_at)
+        if ($request->filled('tanggal')) {
+            $query->whereDate('created_at', $request->tanggal);
+        }
+
+        $dendas = $query->orderBy('created_at', 'desc')->paginate(10);
+
+        return view('denda.index', compact('dendas'));
     }
+
+
 
     public function create()
     {
@@ -66,7 +99,7 @@ class DendaController extends Controller
         return redirect()->route('denda.index')->with('success', 'Denda berhasil dihapus.');
     }
 
-      public function konfirmasi($id)
+    public function konfirmasi($id)
     {
         $denda = Denda::findOrFail($id);
 
@@ -81,18 +114,18 @@ class DendaController extends Controller
     }
 
     public function exportPdf()
-{
-    // filter data 7 hari terakhir
-    $startDate = Carbon::now()->subDays(7);
-    $endDate = Carbon::now();
+    {
+        // filter data 7 hari terakhir
+        $startDate = Carbon::now()->subDays(7);
+        $endDate = Carbon::now();
 
-    $dendas = Denda::with('pengembalian.user')
-        ->whereBetween('created_at', [$startDate, $endDate])
-        ->get();
+        $dendas = Denda::with('pengembalian.user')
+            ->whereBetween('created_at', [$startDate, $endDate])
+            ->get();
 
-    $pdf = PDF::loadView('denda.laporan_pdf', compact('dendas', 'startDate', 'endDate'))
-              ->setPaper('a4', 'landscape');
+        $pdf = PDF::loadView('denda.laporan_pdf', compact('dendas', 'startDate', 'endDate'))
+            ->setPaper('a4', 'landscape');
 
-    return $pdf->download('laporan_denda_mingguan.pdf');
-}
+        return $pdf->download('laporan_denda_mingguan.pdf');
+    }
 }

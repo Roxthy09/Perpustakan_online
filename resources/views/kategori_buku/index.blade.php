@@ -2,72 +2,83 @@
 
 @section('content')
 <div class="container">
-    <h2>Daftar Kategori Buku</h2>
-    <a href="{{ route('kategori_buku.create') }}" class="btn btn-primary mb-3">Tambah Kategori</a>
+    <h2 class="mb-4">Daftar Kategori Buku</h2>
 
     @if(session('success'))
-    <div class="alert alert-success">{{ session('success') }}</div>
+        <div class="alert alert-success">{{ session('success') }}</div>
     @endif
 
-    <div class="card">
+    <div class="card shadow-sm rounded-3">
         <div class="card-body">
-            <div class="mb-2">
-                <h4 class="card-title mb-0">File export</h4>
-            </div>
-            <p class="card-subtitle mb-3">
-                Exporting data from a table can often be a key part of a
-                complex application. The Buttons extension for DataTables
-                provides three plug-ins that provide overlapping
-                functionality for data export. You can refer full
-                documentation from here
-                <a href="https://datatables.net/">Datatables</a>
-            </p>
+
+            {{-- Tombol tambah kategori hanya untuk admin/petugas --}}
+            @if(auth()->user()->role == 'admin' || auth()->user()->role == 'petugas')
+                <a href="{{ route('kategori_buku.create') }}" class="btn btn-primary mb-3">
+                    <i class="ti ti-plus"></i> Tambah Kategori
+                </a>
+            @endif
+
             <div class="table-responsive">
-                <table id="file_export" class="table w-100 table-striped table-bordered display text-nowrap">
-                    <thead>
+                <table id="file_export" class="table table-striped table-bordered align-middle">
+                    <thead class="table-light">
                         <tr>
-                            <th>Kode</th>
-                            <th>Nama</th>
-                            <th>Deskripsi</th>
-                            <th>Aksi</th>
+                            <th class="text-center" style="width: 5%">No</th>
+                            <th class="text-center">Kode</th>
+                            <th class="text-center">Nama</th>
+                            <th class="text-center">Deskripsi</th>
+                            <th class="text-center" style="width: 15%">Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach($kategoris as $kategori)
+                        @forelse($kategoris as $index => $kategori)
                         <tr>
-                            <td>{{ $kategori->kode }}</td>
+                            <td class="text-center">{{ $kategoris->firstItem() + $index }}</td>
+                            <td class="text-center">{{ $kategori->kode }}</td>
                             <td>{{ $kategori->nama }}</td>
-                            <td>{{ $kategori->deskripsi }}</td>
-                            <td>
-                                <a href="{{ route('kategori_buku.edit', $kategori->id) }}" class="btn btn-warning btn-sm">Edit</a>
-                                <form action="{{ route('kategori_buku.destroy', $kategori->id) }}" method="POST" style="display:inline;">
-                                    @csrf @method('DELETE')
-                                    <button type="submit" onclick="return confirm('Hapus kategori?')" class="btn btn-danger btn-sm">Hapus</button>
-                                </form>
+                            <td>{{ $kategori->deskripsi ?? '-' }}</td>
+                            <td class="text-center">
+                                {{-- Semua user bisa lihat detail --}}
+                                @if(auth()->user()->role == 'user')
+                                    <a href="{{ route('user.kategori_buku.show', $kategori->id) }}" class="btn btn-info btn-sm" title="Detail">
+                                        <i class="ti ti-eye"></i>
+                                    </a>
+                                @else
+                                    <a href="{{ route('kategori_buku.show', $kategori->id) }}" class="btn btn-info btn-sm" title="Detail">
+                                        <i class="ti ti-eye"></i>
+                                    </a>
+                                @endif
+
+                                {{-- Hanya admin / petugas bisa edit & hapus --}}
+                                @if(auth()->user()->role == 'admin' || auth()->user()->role == 'petugas')
+                                    <a href="{{ route('kategori_buku.edit',$kategori->id) }}" class="btn btn-warning btn-sm" title="Edit">
+                                        <i class="ti ti-edit"></i>
+                                    </a>
+                                    <form action="{{ route('kategori_buku.destroy',$kategori->id) }}" method="POST" class="d-inline">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="btn btn-danger btn-sm" title="Hapus" onclick="return confirm('Yakin ingin hapus kategori_buku ini?')">
+                                            <i class="ti ti-trash"></i>
+                                        </button>
+                                    </form>
+                                @endif
                             </td>
                         </tr>
-                        @endforeach
-                    </tbody>
-                    <tfoot>
-                        <!-- start row -->
+                        @empty
                         <tr>
-                            <th>Kode</th>
-                            <th>Nama</th>
-                            <th>Deskripsi</th>
-                            <th>Aksi</th>
+                            <td colspan="5" class="text-center text-muted">Belum ada kategori</td>
                         </tr>
-                        <!-- end row -->
-                    </tfoot>
+                        @endforelse
+                    </tbody>
                 </table>
             </div>
-            <div class="d-flex justify-content-between align-items-center mt-3">
-                <!-- Info seperti DataTables -->
-                <div class="dataTables_info" role="status" aria-live="polite">
-                    Showing {{ $kategoris->firstItem() }} to {{ $kategoris->lastItem() }} of {{ $kategoris->total() }} entries
-                </div>
 
-                <!-- Pagination -->
-                <div class="dataTables_paginate paging_simple_numbers">
+            {{-- Info & Pagination --}}
+            <div class="d-flex justify-content-between align-items-center mt-3">
+                <div class="dataTables_info">
+                    Showing {{ $kategoris->firstItem() }} to {{ $kategoris->lastItem() }} 
+                    of {{ $kategoris->total() }} entries
+                </div>
+                <div class="dataTables_paginate">
                     {{ $kategoris->onEachSide(1)->links('vendor.pagination.datatable') }}
                 </div>
             </div>

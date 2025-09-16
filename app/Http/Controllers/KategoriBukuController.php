@@ -47,6 +47,12 @@ class KategoriBukuController extends Controller
         return redirect()->route('kategori_buku.index')->with('success', 'Kategori berhasil diperbarui');
     }
 
+    public function show(KategoriBuku $kategori_buku)
+    {
+        $kategoris = KategoriBuku::findOrFail($kategori_buku->id);
+        return view('kategori_buku.show', compact('kategoris'));
+    }
+
     public function destroy(KategoriBuku $kategori_buku)
     {
         $kategori_buku->delete();

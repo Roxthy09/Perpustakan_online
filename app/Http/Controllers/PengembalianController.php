@@ -11,11 +11,42 @@ use Illuminate\Support\Facades\Auth;
 
 class PengembalianController extends Controller
 {
-    public function index()
-    {
-        $pengembalians = Pengembalian::with(['peminjaman.user', 'peminjaman.buku'])->paginate(10);
-        return view('pengembalian.index', compact('pengembalians'));
+   public function index(Request $request)
+{
+    $query = Pengembalian::with(['peminjaman.user', 'peminjaman.buku']);
+
+    // kalau role user, hanya lihat data miliknya
+    if (auth()->user()->role === 'user') {
+        $query->whereHas('peminjaman', function ($q) {
+            $q->where('user_id', auth()->id());
+        });
     }
+
+    // Search: nama peminjam / judul buku
+    if ($request->filled('search')) {
+        $search = $request->search;
+        $query->whereHas('peminjaman.user', function ($q) use ($search) {
+            $q->where('name', 'like', "%{$search}%");
+        })->orWhereHas('peminjaman.buku', function ($q) use ($search) {
+            $q->where('judul', 'like', "%{$search}%");
+        });
+    }
+
+    // Filter status
+    if ($request->filled('status')) {
+        $query->where('status', $request->status);
+    }
+
+    // Filter tanggal pengembalian
+    if ($request->filled('tgl_kembali')) {
+        $query->whereDate('tgl_kembali', $request->tgl_pengembalian);
+    }
+
+    $pengembalians = $query->orderBy('created_at', 'desc')->paginate(10);
+
+    return view('pengembalian.index', compact('pengembalians'));
+}
+
 
     public function create()
     {
@@ -51,7 +82,7 @@ class PengembalianController extends Controller
         ]);
 
         return redirect()->route('pengembalian.show', $pengembalian->id)
-                         ->with('success', 'Pengembalian dicatat, silakan konfirmasi denda jika ada.');
+            ->with('success', 'Pengembalian dicatat, silakan konfirmasi denda jika ada.');
     }
 
     public function show(Pengembalian $pengembalian)
@@ -121,6 +152,6 @@ class PengembalianController extends Controller
             ]);
         }
 
-        return redirect()->back()->with('success', 'Pengembalian berhasil dikonfirmasi.');
+        return redirect()->route('pengembalian.index')->with('success', 'Pengembalian berhasil dikonfirmasi.');
     }
 }

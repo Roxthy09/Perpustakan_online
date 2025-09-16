@@ -18,7 +18,7 @@
     <!-- Core Css -->
     <link rel="stylesheet" href="{{asset('admin/assets/css/styles.css')}}" />
 
-    <title>Modernize Bootstrap Admin</title>
+    <title>E-Perpus Login</title>
   </head>
 
   <body>

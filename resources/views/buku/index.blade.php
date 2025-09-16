@@ -2,8 +2,7 @@
 
 @section('content')
 <div class="container">
-    <h1>Daftar Buku</h1>
-    <a href="{{ route('buku.create') }}" class="btn btn-primary mb-3">Tambah Buku</a>
+    <h1 class="mb-4">Daftar Buku</h1>
 
     @if(session('success'))
     <div class="alert alert-success">{{ session('success') }}</div>
@@ -11,108 +10,98 @@
 
     <div class="card">
         <div class="card-body">
-            <div class="mb-2">
-                <h4 class="card-title mb-0">File export</h4>
-            </div>
-            <p class="card-subtitle mb-3">
-                Exporting data from a table can often be a key part of a
-                complex application. The Buttons extension for DataTables
-                provides three plug-ins that provide overlapping
-                functionality for data export. You can refer full
-                documentation from here
-                <a href="https://datatables.net/">Datatables</a>
-            </p>
+
+            {{-- Tombol tambah buku hanya untuk admin / petugas --}}
+            @if(auth()->user()->role == 'admin' || auth()->user()->role == 'petugas')
+                <a href="{{ route('buku.create') }}" class="btn btn-primary mb-3">
+                    <i class="ti ti-plus"></i> Tambah Buku
+                </a>
+            @endif
+
             <div class="table-responsive">
-                <table id="file_export" class="table w-100 table-striped table-bordered display text-nowrap">
-                    <thead>
+                <table class="table table-striped table-bordered align-middle">
+                    <thead class="table-light text-center">
                         <tr>
-                            <th>Kode</th>
+                            <th style="width: 80px;">Kode</th>
                             <th>Judul</th>
-                            <th>Kategori Buku</th>
-                            <th>Penulis</th>
-                            <th>Penerbit</th>
-                            <th>Tahun Terbit</th>
-                            <th>Stok</th>
-                            <th>Gambar</th>
-                            <th>Aksi</th>
+                            <th>Kategori</th>
+                            <th style="width: 70px;">Stok</th>
+                            <th style="width: 100px;">Gambar</th>
+                            <th style="width: 160px;">Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
                         @foreach($bukus as $buku)
                         <tr>
-                            <td>{{ $buku->kode_buku }}</td>
+                            <td class="text-center">{{ $buku->kode_buku }}</td>
                             <td>{{ $buku->judul }}</td>
-                            <td>{{ $buku->kategoris ? $buku->kategoris->nama : 'Tidak ada kategori' }}</td>
-                            <td>{{ $buku->penulis }}</td>
-                            <td>{{ $buku->penerbit }}</td>
-                            <td>{{ $buku->tahun_terbit}}</td>
-                            <td>{{ $buku->stok }}</td>
-                            <td>
+                            <td>{{ $buku->kategoris ? $buku->kategoris->nama : '-' }}</td>
+                            <td class="text-center">{{ $buku->stok }}</td>
+                            <td class="text-center">
                                 @if($buku->gambar)
                                 <button type="button" class="btn btn-info btn-sm" data-bs-toggle="modal" data-bs-target="#gambarModal{{ $buku->id }}">
-                                    Lihat Gambar
+                                    Lihat
                                 </button>
 
-                                <!-- Modal Gambar -->
-                                <div class="modal fade" id="gambarModal{{ $buku->id }}" tabindex="-1" aria-labelledby="gambarModalLabel{{ $buku->id }}" aria-hidden="true">
+                                <!-- Modal -->
+                                <div class="modal fade" id="gambarModal{{ $buku->id }}" tabindex="-1" aria-hidden="true">
                                     <div class="modal-dialog modal-dialog-centered">
                                         <div class="modal-content">
                                             <div class="modal-header">
-                                                <h5 class="modal-title" id="gambarModalLabel{{ $buku->id }}">{{ $buku->judul }}</h5>
-                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                <h5 class="modal-title">{{ $buku->judul }}</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                                             </div>
                                             <div class="modal-body text-center">
-                                                <img src="{{ asset('storage/'.$buku->gambar) }}" alt="{{ $buku->judul }}" class="img-fluid">
+                                                <img src="{{ asset('storage/'.$buku->gambar) }}" alt="{{ $buku->judul }}" class="img-fluid rounded">
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                                 @else
-                                Tidak ada gambar
+                                <span class="text-muted">-</span>
                                 @endif
                             </td>
-                            <td>
-                                <a href="{{ route('buku.edit',$buku->id) }}" class="btn btn-warning btn-sm">Edit</a>
-                                <a href="{{ route('buku.show', $buku->id) }}" class="btn btn-info btn-sm">Detail</a>
-                                <form action="{{ route('buku.destroy',$buku->id) }}" method="POST" style="display:inline-block;">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Yakin ingin hapus buku ini?')">Hapus</button>
-                                </form>
+                            <td class="text-center">
+                                {{-- Semua user bisa lihat detail --}}
+                                @if(auth()->user()->role == 'user')
+                                    <a href="{{ route('user.buku.show', $buku->id) }}" class="btn btn-info btn-sm" title="Detail">
+                                        <i class="ti ti-eye"></i>
+                                    </a>
+                                @else
+                                    <a href="{{ route('buku.show', $buku->id) }}" class="btn btn-info btn-sm" title="Detail">
+                                        <i class="ti ti-eye"></i>
+                                    </a>
+                                @endif
+
+                                {{-- Hanya admin / petugas bisa edit & hapus --}}
+                                @if(auth()->user()->role == 'admin' || auth()->user()->role == 'petugas')
+                                    <a href="{{ route('buku.edit',$buku->id) }}" class="btn btn-warning btn-sm" title="Edit">
+                                        <i class="ti ti-edit"></i>
+                                    </a>
+                                    <form action="{{ route('buku.destroy',$buku->id) }}" method="POST" class="d-inline">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="btn btn-danger btn-sm" title="Hapus" onclick="return confirm('Yakin ingin hapus buku ini?')">
+                                            <i class="ti ti-trash"></i>
+                                        </button>
+                                    </form>
+                                @endif
                             </td>
                         </tr>
                         @endforeach
                     </tbody>
-                    <tfoot>
-                        <!-- start row -->
-                        <tr>
-                            <th>Kode</th>
-                            <th>Judul</th>
-                            <th>Kategori Buku</th>
-                            <th>Penulis</th>
-                            <th>Penerbit</th>
-                            <th>Tahun Terbit</th>
-                            <th>Stok</th>
-                            <th>Gambar</th>
-                            <th>Aksi</th>
-                        </tr>
-                        <!-- end row -->
-                    </tfoot>
                 </table>
             </div>
 
+            <!-- Info & Pagination -->
             <div class="d-flex justify-content-between align-items-center mt-3">
-                <!-- Info seperti DataTables -->
-                <div class="dataTables_info" role="status" aria-live="polite">
-                    Showing {{ $bukus->firstItem() }} to {{ $bukus->lastItem() }} of {{ $bukus->total() }} entries
+                <div class="small text-muted">
+                    Menampilkan {{ $bukus->firstItem() }} - {{ $bukus->lastItem() }} dari {{ $bukus->total() }} data
                 </div>
-
-                <!-- Pagination -->
-                <div class="dataTables_paginate paging_simple_numbers">
+                <div>
                     {{ $bukus->onEachSide(1)->links('vendor.pagination.datatable') }}
                 </div>
             </div>
-
         </div>
     </div>
 </div>

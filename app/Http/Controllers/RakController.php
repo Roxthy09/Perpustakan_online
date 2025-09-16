@@ -21,8 +21,8 @@ class RakController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'kode' => 'required|unique:raks',
-            'nama' => 'required',
+            'kode_rak' => 'required|unique:raks',
+            'nama_rak' => 'required',
             'lokasi' => 'required',
         ]);
 
@@ -44,8 +44,8 @@ class RakController extends Controller
     public function update(Request $request, Rak $rak)
     {
         $request->validate([
-            'kode' => 'required|unique:raks,kode,' . $rak->id,
-            'nama' => 'required',
+            'kode_rak' => 'required|unique:raks,kode_rak,' . $rak->id,
+            'nama_rak' => 'required',
             'lokasi' => 'required',
         ]);
 

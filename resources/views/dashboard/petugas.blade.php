@@ -31,16 +31,6 @@
         @endforeach
     </div>
 
-    <!-- Filter Rentang Waktu -->
-    <div class="row mt-4">
-        <div class="col-md-4">
-            <input type="text" id="daterange" class="form-control">
-        </div>
-        <div class="col-md-2">
-            <button id="filterBtn" class="btn btn-primary">Filter</button>
-        </div>
-    </div>
-
     <!-- Chart Section -->
     <div class="row mt-5">
         <div class="col-md-6" data-aos="fade-up">
